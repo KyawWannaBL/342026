@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #070b12;
+  --panel: #0b1220;
+  --text: #FAF9F6;
+  --gold: #D4AF37;
+  --accent: #16c784;
+  --border: rgba(255, 255, 255, 0.08);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: radial-gradient(1200px 700px at 60% 30%, #0f1a31 0%, var(--bg) 50%, #060911 100%);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.loginWrap { min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+.loginCard {
+  width: 420px;
+  padding: 48px;
+  background: rgba(10, 16, 28, 0.7);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+.btn-gold {
+  background: var(--gold);
+  color: #000;
+  padding: 14px 32px;
+  border-radius: 50px;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: transform 0.2s, background 0.2s;
+}
+.btn-gold:hover { transform: scale(1.03); background: #e5bd3f; }

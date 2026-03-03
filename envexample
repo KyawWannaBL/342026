@@ -1,0 +1,10 @@
+# Frontend (Vite)
+VITE_SUPABASE_URL="https://<your-project-ref>.supabase.co"
+
+# If your Supabase project has "Legacy API keys disabled", you MUST use the NEW Publishable key (starts with sb_publishable_)
+# Supabase Dashboard -> Settings -> API -> "Publishable key"
+VITE_SUPABASE_PUBLISHABLE_KEY="sb_publishable_..."
+
+# Optional app URLs
+VITE_SITE_URL="http://localhost:5173"
+VITE_APK_URL="/app/britium-express.apk"

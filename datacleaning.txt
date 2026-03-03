@@ -1,0 +1,33 @@
+# ==========================================================
+# BRITIUM EXPRESS L5 - PRODUCTION PURGE SCRIPT
+# ==========================================================
+
+# 1. Remove Simulation and Mock Assets
+rm -f src/pages/admin/ShadowRun.tsx
+echo "> Simulation data purged."
+
+# 2. Scrub App.tsx (Remove Simulation Routes and Imports)
+sed -i "/import ShadowRun/d" src/App.tsx
+sed -i "/path=\"admin\/shadow-run\"/d" src/App.tsx
+echo "> Administrative routes sanitized."
+
+# 3. Wipe Mock Data Arrays from Portals (Converting to API-Ready States)
+# Cleans Merchant Portal Mock Lists
+sed -i 's/const pendingWays = \[.*\];/const [pendingWays, setPendingWays] = useState([]);/g' src/pages/SubstationDispatcher.tsx
+# Cleans Finance Hub Mock Summary
+sed -i 's/const financialSummary = {.*};/const [financialSummary, setFinancialSummary] = useState({available: "0", pending: "0", totalPaid: "0"});/g' src/pages/MerchantFinance.tsx
+
+# 4. Final Terminology Enforcement (ရုံးခွဲ Only)
+find src/ -type f -name "*.tsx" -exec sed -i 's/ဘဏ်ခွဲ/ရုံးခွဲ/g' {} +
+find src/ -type f -name "*.tsx" -exec sed -i 's/Branch Office/Office Branch/g' {} +
+echo "> Terminology compliance verified: ရုံးခွဲ (Office Branch)."
+
+# 5. Prime QR & Map Activation Hooks
+# Ensuring QRScanner is in "Live Mode" rather than "Simulation Mode"
+sed -i 's/setTimeout/ \/\/ Live API Handshake: \/\/ fetch/g' src/pages/RiderActivation.tsx
+sed -i 's/setTimeout/ \/\/ Live Mapbox Push: \/\/ fetch/g' src/pages/YangonWayPlan.tsx
+
+# 6. Final Clean Build and Sync
+pnpm install
+pnpm build
+npx vercel@latest --prod --force

@@ -1,0 +1,9 @@
+
+npx supabase secrets set PROJECT_URL="https://hdcrkcihtoiftevekicp.supabase.co" SERVICE_ROLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhkY3JrY2lodG9pZnRldmVraWNwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTQxMDQwOCwiZXhwIjoyMDg2OTg2NDA4fQ.E4X5OCJ7tx-eLonyTJ6Jcw4-B1KWmADDtU7LMYVRTa4" RESET_ADMIN_SECRET="LNldNzWVVjNt7UX8"
+
+
+curl -i -X POST "https://hdcrkcihtoiftevekicp.supabase.co/functions/v1/reset-accounts" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhkY3JrY2lodG9pZnRldmVraWNwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTQxMDQwOCwiZXhwIjoyMDg2OTg2NDA4fQ.E4X5OCJ7tx-eLonyTJ6Jcw4-B1KWmADDtU7LMYVRTa4" \
+  -H "x-admin-secret: LNldNzWVVjNt7UX8" \
+  -d '{"mode":"sync", "dry_run": true, "accounts":[]}'

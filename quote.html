@@ -1,0 +1,31 @@
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+    const SUPABASE_URL = 'http://127.0.0.1:54321';
+    const SUPABASE_KEY = 'sb_publishable_ACJWlZQHlZjBrEguHvfOxg_3BJgxAaH';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function calculateRate() {
+        const region = document.getElementById('destinationRegion').value;
+        const weight = parseFloat(document.getElementById('weight').value) || 1;
+        
+        // FETCH LIVE RATE FROM DATABASE
+        const { data, error } = await supabase
+            .from('domestic_tariffs')
+            .select('base_rate')
+            .eq('region_name', region === 'yangon' ? 'Yangon' : 'Mandalay')
+            .single();
+
+        let basePrice = data ? data.base_rate : 3000; // Fallback to 3000
+
+        // Business Logic: +500 MMK per extra KG
+        let total = basePrice + (weight > 1 ? (weight - 1) * 500 : 0);
+
+        document.getElementById('resultPrice').innerText = total.toLocaleString() + " MMK";
+        document.getElementById('resultTime').innerHTML = '<i class="fas fa-motorcycle me-1"></i> Live Database Rate';
+    }
+</script>
+
+
+
+

@@ -1,0 +1,83 @@
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+    // 2. Initialize Supabase (REPLACE THESE WITH YOUR ACTUAL KEYS)
+    // You can find these in your Supabase Dashboard -> Settings -> API
+    const SUPABASE_URL = 'sb_publishable_ACJWlZQHlZjBrEguHvfOxg_3BJgxAaH';
+    const SUPABASE_ANON_KEY = 'sb_publishable_ACJWlZQHlZjBrEguHvfOxg_3BJgxAaH';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function registerShop() {
+        // Grab the button to show loading state
+        const btn = document.querySelector('button[onclick="registerShop()"]');
+        const originalText = btn.innerText;
+
+        // 1. Get values from the DOM
+        const shopName = document.getElementById('shopName').value;
+        const ownerName = document.getElementById('ownerName').value;
+        const phone = document.getElementById('phone').value;
+        
+        // We use querySelector for these since they don't have IDs in your HTML
+        const email = document.querySelector('input[type="email"]').value;
+        const passwordInputs = document.querySelectorAll('input[type="password"]');
+        const password = passwordInputs[0].value;
+        const confirmPassword = passwordInputs[1].value;
+        const terms = document.getElementById('terms').checked;
+
+        // 2. Enterprise Validation
+        if (!shopName || !ownerName || !phone || !email || !password) {
+            alert("Please fill in all required fields, including Email and Password.");
+            return;
+        }
+        if (password !== confirmPassword) {
+            alert("Security Error: Passwords do not match.");
+            return;
+        }
+        if (!terms) {
+            alert("You must agree to the Terms of Service.");
+            return;
+        }
+
+        // Lock button to prevent duplicate submissions
+        btn.innerText = "AUTHENTICATING & SECURING...";
+        btn.disabled = true;
+
+        try {
+            // 3. Register the user in Supabase Auth
+            const { data: authData, error: authError } = await supabase.auth.signUp({
+                email: email,
+                password: password,
+            });
+
+            if (authError) throw authError;
+
+            // 4. Insert the KYC profile data into your profiles table
+            // This is the exact data the Super Admin Dashboard listens for
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .upsert({
+                    id: authData.user.id, // Tie the profile to the secure Auth ID
+                    full_name: ownerName,
+                    shop_name: shopName,
+                    phone: phone,
+                    role_code: 'MER',
+                    kyc_status: 'pending', // Triggers the yellow alert in Super Admin
+                    status: 'PENDING_KYC'
+                });
+
+            if (profileError) throw profileError;
+
+            // 5. Success Routing
+            alert('Registration Successful! Your account is pending Super Admin review.');
+            window.location.href = 'login.html'; // Redirect to your portal login
+
+        } catch (error) {
+            console.error("Registration failed:", error);
+            alert("Registration Error: " + error.message);
+        } finally {
+            // Unlock button if it failed
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    }
+</script>
