@@ -1,114 +1,53 @@
-import * as React from "react";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
-import { PATHS } from "../routes/paths";
-import { supabase } from "../lib/supabase";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
 
-export type User = { id: string; email: string; name: string; role?: string; };
+type AuthContextType = { user: any; role: string | null; loading: boolean; logout: () => Promise<void>; };
+const AuthContext = createContext<AuthContextType | null>(null);
 
-type AuthContextValue = { 
-  user: User | null; 
-  loading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>; 
-  logout: () => Promise<void>; 
-};
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<any>(null);
+  const [role, setRole] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-const AuthContext = React.createContext<AuthContextValue | null>(null);
-
-export function AuthProvider(props: { children: React.ReactNode }) {
-  const [user, setUser] = React.useState<User | null>(null);
-  const [loading, setLoading] = React.useState(true);
-
-  React.useEffect(() => {
-    let mounted = true;
-    
-    // Auto Mock mode logic if bypass is active
-    const isMock = import.meta.env.VITE_MOCK_MODE === '1';
-
-    async function initSession() {
-      if (isMock) {
-        setUser({ id: "mock", email: "admin@britium.com", name: "System Admin" });
-        setLoading(false);
-        return;
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null);
+      if (session?.user) {
+        supabase.from('profiles').select('role').eq('id', session.user.id).single()
+          .then(({ data }) => setRole(data?.role || 'RIDER'));
       }
+      setLoading(false);
+    });
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (mounted) {
-        if (session?.user) {
-          setUser({
-            id: session.user.id,
-            email: session.user.email || "",
-            name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || "User",
-            role: session.user.user_metadata?.role || "SUPER_ADMIN"
-          });
-        }
-        setLoading(false);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setUser(session?.user || null);
+      if (session?.user) {
+        const { data } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
+        setRole(data?.role || 'RIDER');
+      } else {
+        setRole(null);
       }
-    }
-    
-    initSession();
+    });
 
-    if (!isMock) {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-        if (session?.user) {
-          setUser({
-            id: session.user.id,
-            email: session.user.email || "",
-            name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || "User",
-            role: session.user.user_metadata?.role || "SUPER_ADMIN"
-          });
-        } else {
-          setUser(null);
-        }
-        setLoading(false);
-      });
-      return () => { mounted = false; subscription.unsubscribe(); };
-    }
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = React.useCallback(async (email: string, password: string) => {
-    if (import.meta.env.VITE_MOCK_MODE === '1') {
-      setUser({ id: "mock", email, name: email.split('@')[0] });
-      return { success: true };
-    }
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { success: false, error: error.message };
-    return { success: true };
-  }, []);
+  const logout = async () => { await supabase.auth.signOut(); setUser(null); setRole(null); };
 
-  const logout = React.useCallback(async () => {
-    if (import.meta.env.VITE_MOCK_MODE === '1') {
-      setUser(null);
-    } else {
-      await supabase.auth.signOut();
-    }
-  }, []);
-
-  return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
-      {props.children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user, role, loading, logout }}>{children}</AuthContext.Provider>;
 }
 
-export function useAuth() {
-  const ctx = React.useContext(AuthContext);
+export const useAuth = () => {
+  const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
-}
+};
 
-export function RequireAuth(props: { children: React.ReactNode }) {
+export function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const location = useLocation();
-  if (loading) return <div style={{ padding: '20px', color: '#e7eefc' }}>Initializing Secure Session...</div>;
-  if (!user) return <Navigate to={PATHS.login} replace state={{ from: location.pathname }} />;
-  return <>{props.children}</>;
-}
-
-export function useSignOutAndRedirect() {
-  const { logout } = useAuth();
-  const navigate = useNavigate();
-  return React.useCallback(async () => {
-    await logout();
-    navigate(PATHS.login, { replace: true });
-  }, [navigate, logout]);
+  if (loading) return <div className="min-h-screen bg-[#05080F] flex items-center justify-center text-emerald-500 font-mono tracking-widest uppercase">Initializing L5 Secure Module...</div>;
+  if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
+  return <>{children}</>;
 }
