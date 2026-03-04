@@ -135,7 +135,7 @@ export default function LoginPage() {
       
       {/* 1. MP4 BACKGROUND (Gracefully falls back to dark color if missing) */}
       <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none">
-        <source src="/assets/login-bg.mp4" type="video/mp4" />
+        <source src="/background.mp4" type="video/mp4" />
       </video>
 
       {/* 2. LANGUAGE TOGGLE (Top Right) */}
@@ -152,7 +152,7 @@ export default function LoginPage() {
         <div className="text-center space-y-4">
           {/* Logo with Fallback */}
           <div className="mx-auto h-20 w-20 bg-black/50 border border-white/10 rounded-2xl flex items-center justify-center mb-2 overflow-hidden shadow-[0_0_30px_rgba(16,185,129,0.15)] backdrop-blur-sm">
-            <object data="/assets/britium-logo.png" type="image/png" className="w-full h-full object-contain p-2">
+            <object data="/logo.png" type="image/png" className="w-full h-full object-contain p-2">
               <ShieldCheck className="h-10 w-10 text-emerald-500" />
             </object>
           </div>
